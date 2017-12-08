@@ -1,3 +1,5 @@
+#include "BaseHeap.hpp" //this is needed for autocompletion to work :/
+
 template<typename TKey, class TDerived>
 BaseNode<TKey, TDerived>::BaseNode(const TKey& key)
 	: _key(key)

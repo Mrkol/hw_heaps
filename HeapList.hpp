@@ -1,16 +1,24 @@
-#pragma once
+#ifndef HEAP_LIST_HPP
+#define HEAP_LIST_HPP
+
+#include <cstddef>
+#include <vector>
 
 
-template<typename THeap>
+template<class THeap>
+class HeapList;
+
+template<class THeap>
+std::ostream& operator<<(std::ostream&, const HeapList<THeap>&);
+
+template<class THeap>
 class HeapList
 {
 public:
-	using IndexType = typename THeap::IndexType;
+	using IndexType = std::size_t;
 	using KeyType = typename THeap::KeyType;
 	using KeyReference = typename THeap::KeyReference;
 	using KeyConstReference = typename THeap::KeyConstReference;
-	using KeyPointer = typename THeap::KeyPointer;
-	using KeyConstPointer = typename THeap::KeyConstPointer;
 
 	void AddHeap(KeyType);
 	
@@ -19,6 +27,21 @@ public:
 	KeyConstReference GetMin(IndexType) const;
 	
 	KeyType ExtractMin(IndexType);
+
+	bool Contains(IndexType, KeyConstReference) const;
+
+	IndexType Size() const;
+
+	std::size_t Empty(IndexType) const;
 	
-	void Meld(THeap&, THeap&);
+	void Meld(IndexType, IndexType);
+
+	friend std::ostream& operator<<<>(std::ostream&, const HeapList<THeap>&);
+
+private:
+	std::vector<THeap> _heaps;
 };
+
+#include "HeapList.tpp"
+
+#endif //HEAP_LIST_HPP

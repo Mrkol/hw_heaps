@@ -1,11 +1,11 @@
+#ifndef BINOMIAL_HEAP_HPP
+#define BINOMIAL_HEAP_HPP
+
 #include <vector>
 #include <iostream>
 #include <iterator>
 #include <list>
 #include "BaseHeap.hpp"
-
-
-#pragma once
 
 
 template<typename TKey>
@@ -31,6 +31,10 @@ public:
 
 	BinomialHeap();
 
+	BinomialHeap(const BinomialHeap<TKey>&);
+
+	BinomialHeap<TKey>& operator=(const BinomialHeap<TKey>&);
+
 	KeyConstReference GetMin() const override;
 
 	KeyType ExtractMin() override;
@@ -38,6 +42,12 @@ public:
 	void Insert(KeyConstReference) override;
 
 	void MeldOn(const BinomialHeap<TKey>&) override;
+	
+	bool Contains(KeyConstReference) const override;
+
+	std::size_t Size() const override;
+
+	bool Empty() const override;
 
 	~BinomialHeap() noexcept override;
 
@@ -50,6 +60,7 @@ private:
 	void _updateMinimum(typename std::list<NodeType*>::iterator&);
 
 	std::list<NodeType*> _roots;
+	std::size_t _size;
 
 	typename std::list<NodeType*>::iterator _minimum;
 };
@@ -75,3 +86,5 @@ private:
 };
 
 #include "BinomialHeap.tpp"
+
+#endif //BINOMIAL_HEAP_HPP

@@ -1,9 +1,9 @@
+#ifndef SLHEAP_HPP
+#define SLHEAP_HPP
+
 #include <cstddef>
 #include <iostream>
 #include "BaseHeap.hpp"
-
-
-#pragma once
 
 
 template<typename, class, class>
@@ -44,6 +44,8 @@ public:
 
 	SLHeap(const SLHeap<TKey, TDerived, TNode>&);
 
+	SLHeap<TKey, TDerived, TNode>& operator=(const SLHeap<TKey, TDerived, TNode>&);
+
 	KeyConstReference GetMin() const override;
 
 	KeyType ExtractMin() override;
@@ -51,14 +53,23 @@ public:
 	void Insert(KeyConstReference) override;
 
 	void MeldOn(const TDerived&) override;
+	
+	bool Contains(KeyConstReference) const override;
+
+	std::size_t Size() const override;
+
+	bool Empty() const override;
 
 	~SLHeap() noexcept;
 
 	friend std::ostream& operator<<<>(std::ostream&, const SLHeap<TKey, TDerived, TNode>&);
+	
 protected:
 	static NodeType* _meld(NodeType*, NodeType*);
 
 	NodeType* _root;
+
+	std::size_t _size;
 };
 
 template<typename TKey, typename TDerived>
@@ -130,3 +141,5 @@ private:
 };
 
 #include "SLHeap.tpp"
+
+#endif //SLHEAP_HPP

@@ -1,7 +1,7 @@
+#ifndef BASE_HEAP_HPP
+#define BASE_HEAP_HPP
+
 #include <cstddef>
-
-
-#pragma once
 
 
 template<typename TKey, class TDerived>
@@ -27,6 +27,12 @@ public:
 
 	virtual void MeldOn(const TDerived&) = 0;
 
+	virtual bool Contains(KeyConstReference) const = 0;
+
+	virtual std::size_t Size() const = 0;
+
+	virtual bool Empty() const = 0;
+
 	virtual ~BaseHeap() noexcept = default;
 };
 
@@ -45,3 +51,5 @@ protected:
 };
 
 #include "BaseHeap.tpp"
+
+#endif //BASE_HEAP_HPP

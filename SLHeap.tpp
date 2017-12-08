@@ -1,15 +1,31 @@
+#include "SLHeap.hpp" //this is needed for autocompletion to work :/
+
 template<typename TKey, class TDerived, class TNode>
 SLHeap<TKey, TDerived, TNode>::SLHeap()
-	: _root(nullptr)
+	: BaseHeap<TKey, TDerived>(), _root(nullptr), _size(0)
 {
 
 }
 
 template<typename TKey, class TDerived, class TNode>
 SLHeap<TKey, TDerived, TNode>::SLHeap(const SLHeap<TKey, TDerived, TNode>& other)
-	: _root(new TNode(*other._root))
+	: BaseHeap<TKey, TDerived>(other), _size(other._size)
 {
+	if (other._root != nullptr) _root = new TNode(*other._root);
+	else _root = nullptr;
+}
 
+template<typename TKey, class TDerived, class TNode>
+SLHeap<TKey, TDerived, TNode>& 
+	SLHeap<TKey, TDerived, TNode>::operator=(const SLHeap<TKey, TDerived, TNode>& other)
+{
+	if (this->_root != nullptr) delete this->_root;
+
+	this->_root = new TNode(*other._root);
+
+	this->_size = other._size;
+
+	return *this;
 }
 
 template<typename TKey, class TDerived, class TNode>
@@ -39,11 +55,12 @@ TKey SLHeap<TKey, TDerived, TNode>::ExtractMin()
 
 	TKey key = BN::Key(root);
 
-	//guess how much time I spent trying to find this one?
+	//guess how much time I spent trying to find this segfault?
 	root->_left = nullptr;
 	root->_right = nullptr;
 	delete root;
 
+	--this->_size;
 	return key;
 }
 
@@ -51,6 +68,7 @@ template<typename TKey, class TDerived, class TNode>
 void SLHeap<TKey, TDerived, TNode>::Insert(KeyConstReference key) 
 {
 	this->_root = _meld(this->_root, new TNode(key));
+	++this->_size;
 }
 
 template<typename TKey, class TDerived, class TNode>
@@ -61,6 +79,8 @@ void SLHeap<TKey, TDerived, TNode>::MeldOn(const TDerived& other)
 
 	TNode* copy = new TNode(*other._root);
 	this->_root = _meld(this->_root, copy);
+
+	this->_size += other._size;
 }
 
 template<typename TKey, class TDerived, class TNode>
@@ -78,6 +98,25 @@ TNode* SLHeap<TKey, TDerived, TNode>::_meld(TNode* left, TNode* right)
 	left->RestoreInvariant();
 
 	return left;
+}
+
+template<typename TKey, class TDerived, class TNode>
+bool SLHeap<TKey, TDerived, TNode>::Contains(KeyConstReference) const
+{
+	throw -1;
+	return false;
+}
+
+template<typename TKey, class TDerived, class TNode>
+std::size_t SLHeap<TKey, TDerived, TNode>::Size() const
+{
+	return this->_size;
+}
+
+template<typename TKey, class TDerived, class TNode>
+bool SLHeap<TKey, TDerived, TNode>::Empty() const
+{
+	return this->_size == 0;
 }
 
 template<typename TKey, class TDerived>

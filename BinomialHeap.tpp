@@ -1,9 +1,45 @@
+#include "BinomialHeap.hpp" //this is needed for autocompletion to work :/
 
 template<typename TKey>
 BinomialHeap<TKey>::BinomialHeap()
+	: BaseHeap<TKey, BinomialHeap<TKey>>(), _size(0)
 {
 	_roots.push_back(nullptr);
 	_minimum = _roots.begin();
+}
+
+template<typename TKey>
+BinomialHeap<TKey>::BinomialHeap(const BinomialHeap<TKey>& other)
+	: BaseHeap<TKey, BinomialHeap<TKey>>(other)
+{
+	for (auto ptr : other._roots)
+	{
+		if (ptr != nullptr) this->_roots.push_back(new BinomialNode<TKey>(*ptr));
+		else this->_roots.push_back(nullptr);
+	}
+	this->_minimum = std::next(this->_roots.begin(),
+		 std::distance<typename std::list<NodeType*>::const_iterator>(other._roots.begin(), other._minimum));
+	this->_size = other._size;
+}
+
+template<typename TKey>
+BinomialHeap<TKey>& BinomialHeap<TKey>::operator=(const BinomialHeap<TKey>& other)
+{
+	for (auto ptr : this->_roots)
+	{
+		if (ptr != nullptr) delete ptr;
+	}
+
+	for (auto ptr : other._roots)
+	{
+		if (ptr != nullptr) this->_roots.push_back(new BinomialNode<TKey>(*ptr));
+		else this->_roots.push_back(nullptr);
+	}
+	this->_minimum = std::next(this->_roots.begin(),
+		 std::distance<typename std::list<NodeType*>::const_iterator>(other._roots.begin(), other._minimum));
+	this->_size = other._size;
+
+	return *this;
 }
 
 template<typename TKey>
@@ -30,6 +66,8 @@ void BinomialHeap<TKey>::Insert(const TKey& key)
 	unitlist.push_back(new BinomialHeap<TKey>::NodeType(key));
 
 	_meld(unitlist);
+
+	++this->_size;
 }
 
 template<typename TKey>
@@ -46,6 +84,8 @@ TKey BinomialHeap<TKey>::ExtractMin()
 
 	this->_meld(minchildren);
 
+	--this->_size;
+
 	return key;
 }
 
@@ -56,6 +96,27 @@ void BinomialHeap<TKey>::MeldOn(const BinomialHeap<TKey>& other)
 	std::list<NodeType*> copy;
 	for (auto ptr : other._roots) copy.push_back(ptr != nullptr ? new NodeType(*ptr) : nullptr);
 	this->_meld(copy);
+
+	this->_size += other._size;
+}
+
+template<typename TKey>	
+bool BinomialHeap<TKey>::Contains(KeyConstReference) const
+{
+	throw -1;
+	return false;
+}
+
+template<typename TKey>
+std::size_t BinomialHeap<TKey>::Size() const
+{
+	return this->_size;
+}
+
+template<typename TKey>
+bool BinomialHeap<TKey>::Empty() const
+{
+	return this->_size == 0;
 }
 
 template<typename TKey>
@@ -189,6 +250,7 @@ BinomialNode<TKey>::BinomialNode(const BinomialNode<TKey>& other)
 {
 	for (auto ptr : other._children)
 	{
+		//there can and should be no empty children
 		this->_children.push_back(new BinomialNode<TKey>(*ptr));
 	}
 }
