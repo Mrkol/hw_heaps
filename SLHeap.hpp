@@ -53,8 +53,6 @@ public:
 	void Insert(KeyConstReference) override;
 
 	void MeldOn(const TDerived&) override;
-	
-	bool Contains(KeyConstReference) const override;
 
 	std::size_t Size() const override;
 

@@ -27,8 +27,6 @@ public:
 
 	virtual void MeldOn(const TDerived&) = 0;
 
-	virtual bool Contains(KeyConstReference) const = 0;
-
 	virtual std::size_t Size() const = 0;
 
 	virtual bool Empty() const = 0;

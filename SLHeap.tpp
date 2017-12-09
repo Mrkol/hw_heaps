@@ -19,9 +19,12 @@ template<typename TKey, class TDerived, class TNode>
 SLHeap<TKey, TDerived, TNode>& 
 	SLHeap<TKey, TDerived, TNode>::operator=(const SLHeap<TKey, TDerived, TNode>& other)
 {
+	if (this == &other) return *this;
+	
 	if (this->_root != nullptr) delete this->_root;
 
-	this->_root = new TNode(*other._root);
+	if (other._root != nullptr) _root = new TNode(*other._root);
+	else _root = nullptr;
 
 	this->_size = other._size;
 
@@ -98,13 +101,6 @@ TNode* SLHeap<TKey, TDerived, TNode>::_meld(TNode* left, TNode* right)
 	left->RestoreInvariant();
 
 	return left;
-}
-
-template<typename TKey, class TDerived, class TNode>
-bool SLHeap<TKey, TDerived, TNode>::Contains(KeyConstReference) const
-{
-	throw -1;
-	return false;
 }
 
 template<typename TKey, class TDerived, class TNode>

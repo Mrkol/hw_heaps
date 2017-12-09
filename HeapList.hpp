@@ -28,8 +28,6 @@ public:
 	
 	KeyType ExtractMin(IndexType);
 
-	bool Contains(IndexType, KeyConstReference) const;
-
 	IndexType Size() const;
 
 	std::size_t Empty(IndexType) const;

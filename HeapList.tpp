@@ -34,12 +34,6 @@ void HeapList<THeap>::Meld(IndexType first, IndexType second)
 }
 
 template<class THeap>
-bool HeapList<THeap>::Contains(IndexType index, KeyConstReference key) const
-{
-	return _heaps[index].Contains(key);
-}
-
-template<class THeap>
 typename HeapList<THeap>::IndexType HeapList<THeap>::Size() const
 {
 	return _heaps.size();

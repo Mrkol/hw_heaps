@@ -27,8 +27,6 @@ public:
 
 	void MeldOn(const TrustedHeap<TKey>&) override;
 
-	bool Contains(KeyConstReference) const override;
-
 	std::size_t Size() const override;
 
 	bool Empty() const override;

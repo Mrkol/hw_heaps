@@ -33,13 +33,6 @@ void TrustedHeap<TKey>::MeldOn(const TrustedHeap<TKey>& other)
 }
 
 template<typename TKey>
-bool TrustedHeap<TKey>::Contains(KeyConstReference key) const
-{
-	return std::binary_search(this->_impl.begin(), this->_impl.end(), key);
-}
-
-
-template<typename TKey>
 std::size_t TrustedHeap<TKey>::Size() const
 {
 	return this->_impl.size();

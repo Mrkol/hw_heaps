@@ -25,10 +25,14 @@ BinomialHeap<TKey>::BinomialHeap(const BinomialHeap<TKey>& other)
 template<typename TKey>
 BinomialHeap<TKey>& BinomialHeap<TKey>::operator=(const BinomialHeap<TKey>& other)
 {
+	if (this == &other) return *this;
+
 	for (auto ptr : this->_roots)
 	{
 		if (ptr != nullptr) delete ptr;
 	}
+
+	this->_roots.clear();
 
 	for (auto ptr : other._roots)
 	{
@@ -98,13 +102,6 @@ void BinomialHeap<TKey>::MeldOn(const BinomialHeap<TKey>& other)
 	this->_meld(copy);
 
 	this->_size += other._size;
-}
-
-template<typename TKey>	
-bool BinomialHeap<TKey>::Contains(KeyConstReference) const
-{
-	throw -1;
-	return false;
 }
 
 template<typename TKey>
