@@ -2,6 +2,8 @@
 #include <random>
 #include <algorithm>
 #include <tuple>
+#include <chrono>
+#include <iomanip>
 #include "gtest/gtest.h"
 #include "HeapList.hpp"
 #include "SLHeap.hpp"
@@ -13,7 +15,7 @@ namespace
 {
 	template<typename THeap>
 	::testing::AssertionResult 
-		Matches(const HeapList<THeap>& heaps, const HeapList<TrustedHeap<int>>& trusted)
+		Matches(const HeapList<THeap>& heaps, const HeapList<TrustedHeap<long long>>& trusted)
 	{
 		bool success = true;
 		success &= heaps.Size() == trusted.Size();
@@ -53,7 +55,7 @@ namespace
 			std::size_t SIZE = GetParam();
 
 			_valueData.reserve(SIZE);
-			for (std::size_t i = 0; i < SIZE; ++i) _valueData.push_back(int(i));
+			for (std::size_t i = 0; i < SIZE; ++i) _valueData.push_back((long long)i);
 			std::shuffle(_valueData.begin(), _valueData.end(), engine);
 
 			auto it = _valueData.cbegin();
@@ -62,7 +64,7 @@ namespace
 	
 			std::uniform_int_distribution<int> type(0, 3);
 
-			HeapList<TrustedHeap<int>> trusted;
+			HeapList<TrustedHeap<long long>> trusted;
 
 			for (size_t i = 0; i < SIZE; ++i) 
 			{
@@ -70,19 +72,19 @@ namespace
 
 				if (optype == AddHeap)
 				{
-					int k = *it++;
+					long long k = *it++;
 					trusted.AddHeap(k);
 					_testData.push_back(std::make_tuple(optype, k, 0));
 					continue;
 				}
 
 				if (trusted.Size() == 0) continue;
-				std::uniform_int_distribution<int> index(0, trusted.Size() - 1);
+				std::uniform_int_distribution<long long> index(0, trusted.Size() - 1);
 				
 				if (optype == InsertKey)
 				{
-					int k = *it++;
-					int i = index(engine);
+					long long k = *it++;
+					long long i = index(engine);
 					trusted.InsertKey(i, k);
 					_testData.push_back(std::make_tuple(optype, i, k));
 					continue;
@@ -90,8 +92,8 @@ namespace
 
 				if (optype == ExtractMin)
 				{
-					int i = index(engine);
-					if (trusted.Empty(i)) break;
+					long long i = index(engine);
+					if (trusted.Empty(i)) continue;
 					trusted.ExtractMin(i);
 					_testData.push_back(std::make_tuple(optype, i, 0));
 					continue;
@@ -99,8 +101,8 @@ namespace
 
 				if (optype == Meld)
 				{
-					int i = index(engine);
-					int j = index(engine);
+					long long i = index(engine);
+					long long j = index(engine);
 					if (i == j) continue;
 					trusted.Meld(i, j);
 					_testData.push_back(std::make_tuple(optype, i, j));
@@ -109,11 +111,12 @@ namespace
 			}
 		}
 
-		std::vector<int> _valueData;
-		std::vector<std::tuple<OpType, int, int>> _testData;
+		std::vector<long long> _valueData;
+		std::vector<std::tuple<OpType, long long, long long>> _testData;
 	};
 
-	std::ostream& operator<<(std::ostream& out, const std::vector<std::tuple<OpType, int, int>>& vec)
+	std::ostream& operator<<(std::ostream& out, 
+		const std::vector<std::tuple<OpType, long long, long long>>& vec)
 	{
 		out << "{" << std::endl;
 		for (auto tup : vec)
@@ -126,20 +129,20 @@ namespace
 		return out;
 	}
 
-	template<class THeap> //this, ofcourse, expects an int THeap
-	void CommonHeapTests(const std::vector<std::tuple<OpType, int, int>>& testData)
+	template<class THeap>
+	void CommonHeapTests(const std::vector<std::tuple<OpType, long long, long long>>& testData)
 	{
 
 		HeapList<THeap> heaps;
-		HeapList<TrustedHeap<int>> trusted;
+		HeapList<TrustedHeap<long long>> trusted;
 
 		for (const auto& op : testData) 
 		{
 			EXPECT_TRUE(Matches(heaps, trusted)) << testData;
 
-			int optype = std::get<0>(op);
-			int param1 = std::get<1>(op);
-			int param2 = std::get<2>(op);
+			OpType optype = std::get<0>(op);
+			long long param1 = std::get<1>(op);
+			long long param2 = std::get<2>(op);
 
 			switch (optype)
 			{
@@ -164,7 +167,7 @@ namespace
 					break;
 			}
 		}
-		EXPECT_TRUE(Matches(heaps, trusted));
+		ASSERT_TRUE(Matches(heaps, trusted));
 	}
 
 	template<class THeap>
@@ -205,34 +208,33 @@ namespace
 		heaps.InsertKey(0, 3);
 		ASSERT_EQ(3, heaps.GetMin(0));
 		heaps.ExtractMin(0);
-
 	}
 
 	TEST_P(MainTestCase, TestLeftistHeap)
 	{
-		CommonManualHeapTests<LeftistHeap<int>>();
-		CommonHeapTests<LeftistHeap<int>>(_testData);
+		CommonManualHeapTests<LeftistHeap<long long>>();
+		CommonHeapTests<LeftistHeap<long long>>(_testData);
 	}
 
 	TEST_P(MainTestCase, TestScewHeap)
 	{
-		CommonManualHeapTests<ScewHeap<int>>();
-		CommonHeapTests<ScewHeap<int>>(_testData);
+		CommonManualHeapTests<ScewHeap<long long>>();
+		CommonHeapTests<ScewHeap<long long>>(_testData);
 	}
 
 	TEST_P(MainTestCase, TestBinomialHeap)
 	{
-		CommonManualHeapTests<BinomialHeap<int>>();
-		CommonHeapTests<BinomialHeap<int>>(_testData);
+		CommonManualHeapTests<BinomialHeap<long long>>();
+		CommonHeapTests<BinomialHeap<long long>>(_testData);
 	}
 
 	TEST_P(MainTestCase, TestTrustedHeap)
 	{
-		CommonManualHeapTests<TrustedHeap<int>>();
+		CommonManualHeapTests<TrustedHeap<long long>>();
 	}
 
 	INSTANTIATE_TEST_CASE_P(MainTestCaseInstance, MainTestCase,
-                        ::testing::Values(1e3, 1e4, 1e5, 1e6, 1e7));
+                        ::testing::Values(1e3, 1e4, 1e5));
 }
 
 

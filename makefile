@@ -35,17 +35,25 @@ gtest_main.a : gtest-all.o gtest_main.o
 
 #################
 
-all_tests: dirs unittest
+all_tests: dirs unittest speedtest
 
 run_tests: all_tests
 	$(BIN_DIR)/unittest
 
-unittest.o: $(USER_DIR)/unittest.cpp $(USER_DIR)/HeapList.hpp $(GTEST_HEADERS)
+unittest.o: $(USER_DIR)/unittest.cpp $(GTEST_HEADERS)
 	$(CXX) $(GTESTFLAGS) $(CXXFLAGS) $(DEBUG_FLAGS) \
 		-c $< -o $(OBJ_DIR)/$@
 
 unittest: unittest.o gtest_main.a
 	$(CXX) $(GTESTFLAGS) $(CXXFLAGS) $(DEBUG_FLAGS) -lpthread \
+		$(^:%=$(OBJ_DIR)/%) -o $(BIN_DIR)/$@
+
+speedtest.o: $(USER_DIR)/speedtest.cpp
+	$(CXX) $(CXXFLAGS) $(RELEASE_FLAGS) \
+		-c $< -o $(OBJ_DIR)/$@
+
+speedtest: speedtest.o
+	$(CXX) $(CXXFLAGS) $(RELEASE_FLAGS) -lpthread \
 		$(^:%=$(OBJ_DIR)/%) -o $(BIN_DIR)/$@
 
 dirs:

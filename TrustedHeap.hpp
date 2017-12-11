@@ -34,7 +34,7 @@ public:
 	friend std::ostream& operator<<<>(std::ostream&, const TrustedHeap<TKey>&);
 
 private:
-	std::vector<int> _impl;
+	std::vector<TKey> _impl;
 };
 
 #include "TrustedHeap.tpp"
