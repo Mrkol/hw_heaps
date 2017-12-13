@@ -45,6 +45,13 @@ namespace
 		Meld
 	};
 
+	struct Operation
+	{
+		OpType type;
+		long long param1;
+		long long param2;
+	};
+
 	class MainTestCase : public ::testing::TestWithParam<std::size_t>
 	{
 	protected:
@@ -52,21 +59,21 @@ namespace
 
 		virtual void SetUp()
 		{
-			std::size_t SIZE = GetParam();
+			std::size_t size = GetParam();
 
-			_valueData.reserve(SIZE);
-			for (std::size_t i = 0; i < SIZE; ++i) _valueData.push_back((long long)i);
+			_valueData.reserve(size);
+			for (std::size_t i = 0; i < size; ++i) _valueData.push_back((long long)i);
 			std::shuffle(_valueData.begin(), _valueData.end(), engine);
 
 			auto it = _valueData.cbegin();
 
-			_testData.reserve(SIZE);
+			_testData.reserve(size);
 	
-			std::uniform_int_distribution<int> type(0, 3);
+			std::discrete_distribution<int> type({10, 10, 5, 5});
 
 			HeapList<TrustedHeap<long long>> trusted;
 
-			for (size_t i = 0; i < SIZE; ++i) 
+			while (_testData.size() < size) 
 			{
 				OpType optype = (OpType) type(engine);
 
@@ -74,7 +81,7 @@ namespace
 				{
 					long long k = *it++;
 					trusted.AddHeap(k);
-					_testData.push_back(std::make_tuple(optype, k, 0));
+					_testData.push_back({optype, k, 0});
 					continue;
 				}
 
@@ -86,7 +93,7 @@ namespace
 					long long k = *it++;
 					long long i = index(engine);
 					trusted.InsertKey(i, k);
-					_testData.push_back(std::make_tuple(optype, i, k));
+					_testData.push_back({optype, i, k});
 					continue;
 				}
 
@@ -95,7 +102,7 @@ namespace
 					long long i = index(engine);
 					if (trusted.Empty(i)) continue;
 					trusted.ExtractMin(i);
-					_testData.push_back(std::make_tuple(optype, i, 0));
+					_testData.push_back({optype, i, 0});
 					continue;
 				}
 
@@ -105,24 +112,24 @@ namespace
 					long long j = index(engine);
 					if (i == j) continue;
 					trusted.Meld(i, j);
-					_testData.push_back(std::make_tuple(optype, i, j));
+					_testData.push_back({optype, i, j});
 					continue;
 				}
 			}
 		}
 
 		std::vector<long long> _valueData;
-		std::vector<std::tuple<OpType, long long, long long>> _testData;
+		std::vector<Operation> _testData;
 	};
 
 	std::ostream& operator<<(std::ostream& out, 
-		const std::vector<std::tuple<OpType, long long, long long>>& vec)
+		const std::vector<Operation>& ops)
 	{
 		out << "{" << std::endl;
-		for (auto tup : vec)
+		for (auto op : ops)
 		{
 			out << "\t";
-			out << "(" << std::get<0>(tup) << ", " << std::get<1>(tup) << ", " << std::get<2>(tup) << ")";
+			out << "(" << op.type << ", " << op.param1 << ", " << op.param2 << ")";
 			out << std::endl;
 		}
 		out << "}";
@@ -130,7 +137,7 @@ namespace
 	}
 
 	template<class THeap>
-	void CommonHeapTests(const std::vector<std::tuple<OpType, long long, long long>>& testData)
+	void CommonHeapTests(const std::vector<Operation>& testData)
 	{
 
 		HeapList<THeap> heaps;
@@ -140,30 +147,26 @@ namespace
 		{
 			ASSERT_TRUE(Matches(heaps, trusted)) << testData;
 
-			OpType optype = std::get<0>(op);
-			long long param1 = std::get<1>(op);
-			long long param2 = std::get<2>(op);
-
-			switch (optype)
+			switch (op.type)
 			{
 				case AddHeap:
-					heaps.AddHeap(param1);
-					trusted.AddHeap(param1);
+					heaps.AddHeap(op.param1);
+					trusted.AddHeap(op.param1);
 					break;
 
 				case InsertKey:
-					heaps.InsertKey(param1, param2);
-					trusted.InsertKey(param1, param2);
+					heaps.InsertKey(op.param1, op.param2);
+					trusted.InsertKey(op.param1, op.param2);
 					break;
 
 				case ExtractMin:
-					ASSERT_EQ(trusted.ExtractMin(param1), heaps.ExtractMin(param1))
+					ASSERT_EQ(trusted.ExtractMin(op.param1), heaps.ExtractMin(op.param1))
 						<< "Trusted: " << trusted << std::endl << "Actual: " << heaps << std::endl;
 					break;
 
 				case Meld:
-					heaps.Meld(param1, param2);
-					trusted.Meld(param1, param2);
+					heaps.Meld(op.param1, op.param2);
+					trusted.Meld(op.param1, op.param2);
 					break;
 			}
 		}

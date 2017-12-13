@@ -19,12 +19,18 @@ enum OpType
 	Meld
 };
 
-using TestData_t = std::vector<std::tuple<OpType, long long, long long>>;
+struct Operation
+{
+	OpType type;
+	long long param1;
+	long long param2;
+};
+
+using TestData_t = std::vector<Operation>;
 
 void GenerateTest(TestData_t& testData, const std::size_t size)
 {
-	std::vector<long long> _valueData;
-
+	std::vector<int> _valueData;
 	_valueData.reserve(size);
 	for (std::size_t i = 0; i < size; ++i) _valueData.push_back((long long)i);
 	std::shuffle(_valueData.begin(), _valueData.end(), engine);
@@ -33,7 +39,7 @@ void GenerateTest(TestData_t& testData, const std::size_t size)
 
 	testData.reserve(size);
 
-	std::uniform_int_distribution<int> type(0, 3);
+	std::discrete_distribution<int> type({10, 10, 5, 5});
 
 	HeapList<TrustedHeap<long long>> trusted;
 
@@ -45,7 +51,7 @@ void GenerateTest(TestData_t& testData, const std::size_t size)
 		{
 			long long k = *it++;
 			trusted.AddHeap(k);
-			testData.push_back(std::make_tuple(optype, k, 0));
+			testData.push_back({optype, k, 0});
 			continue;
 		}
 
@@ -57,7 +63,7 @@ void GenerateTest(TestData_t& testData, const std::size_t size)
 			long long k = *it++;
 			long long i = index(engine);
 			trusted.InsertKey(i, k);
-			testData.push_back(std::make_tuple(optype, i, k));
+			testData.push_back({optype, i, k});
 			continue;
 		}
 
@@ -66,7 +72,7 @@ void GenerateTest(TestData_t& testData, const std::size_t size)
 			long long i = index(engine);
 			if (trusted.Empty(i)) continue;
 			trusted.ExtractMin(i);
-			testData.push_back(std::make_tuple(optype, i, 0));
+			testData.push_back({optype, i, 0});
 			continue;
 		}
 
@@ -76,14 +82,14 @@ void GenerateTest(TestData_t& testData, const std::size_t size)
 			long long j = index(engine);
 			if (i == j) continue;
 			trusted.Meld(i, j);
-			testData.push_back(std::make_tuple(optype, i, j));
+			testData.push_back({optype, i, j});
 			continue;
 		}
 	}
 }
 
 template<class THeap>
-void SpeedTest(const std::vector<std::tuple<OpType, long long, long long>>& testData)
+void SpeedTest(const TestData_t& testData)
 {
 	using clock_t = std::chrono::high_resolution_clock;
 	using timepoint_t = std::chrono::time_point<clock_t>;
@@ -97,26 +103,22 @@ void SpeedTest(const std::vector<std::tuple<OpType, long long, long long>>& test
 
 	for (const auto& op : testData) 
 	{
-		OpType optype = std::get<0>(op);
-		long long param1 = std::get<1>(op);
-		long long param2 = std::get<2>(op);
-
-		switch (optype)
+		switch (op.type)
 		{
 			case AddHeap:
-				heaps.AddHeap(param1);
+				heaps.AddHeap(op.param1);
 				break;
 
 			case InsertKey:
-				heaps.InsertKey(param1, param2);
+				heaps.InsertKey(op.param1, op.param2);
 				break;
 
 			case ExtractMin:
-				heaps.ExtractMin(param1);
+				heaps.ExtractMin(op.param1);
 				break;
 
 			case Meld:
-				heaps.Meld(param1, param2);
+				heaps.Meld(op.param1, op.param2);
 				break;
 		}
 	}
@@ -131,7 +133,7 @@ void SpeedTest(const std::vector<std::tuple<OpType, long long, long long>>& test
 
 int main()
 {
-	long long sizes[] {1000ll, 10000ll, 100000ll, 1000000ll, 10000000ll};
+	long long sizes[] {1000ll, 10000ll, 100000ll};
 	for (auto size : sizes)
 	{
 		TestData_t data;

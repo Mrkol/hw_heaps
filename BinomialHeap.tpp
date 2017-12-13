@@ -103,6 +103,7 @@ template<typename TKey>
 void BinomialHeap<TKey>::MeldOn(const IHeap<TKey>& other)
 {
 	using NodeType = BinomialHeap<TKey>::NodeType;
+
 	const BinomialHeap<TKey>& casted = dynamic_cast<const BinomialHeap<TKey>&>(other);
 
 	std::list<NodeType*> copy;

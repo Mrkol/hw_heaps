@@ -31,8 +31,7 @@ void TrustedHeap<TKey>::MeldOn(const IHeap<TKey>& other)
 	
 	_impl.reserve(_impl.size() + casted._impl.size());
 
-	std::copy(casted._impl.begin(), casted._impl.end(), 
-		std::insert_iterator<std::vector<TKey>>(_impl, _impl.end()));
+	_impl.insert(_impl.end(), casted._impl.begin(), casted._impl.end());
 
 	std::make_heap(_impl.begin(), _impl.end(), std::greater<TKey>());
 }
