@@ -3,16 +3,16 @@
 template<typename TKey>
 typename TrustedHeap<TKey>::KeyConstReference TrustedHeap<TKey>::GetMin() const
 {
-	return this->_impl[0];
+	return _impl[0];
 }
 
 template<typename TKey>
 typename TrustedHeap<TKey>::KeyType TrustedHeap<TKey>::ExtractMin()
 {
-	KeyType copy = this->_impl[0];
+	KeyType copy = _impl[0];
 
-	std::pop_heap(this->_impl.begin(), this->_impl.end(), std::greater<TKey>());
-	this->_impl.pop_back();
+	std::pop_heap(_impl.begin(), _impl.end(), std::greater<TKey>());
+	_impl.pop_back();
 
 	return copy;
 }
@@ -20,34 +20,40 @@ typename TrustedHeap<TKey>::KeyType TrustedHeap<TKey>::ExtractMin()
 template<typename TKey>
 void TrustedHeap<TKey>::Insert(KeyConstReference key)
 {
-	this->_impl.push_back(key);
-	std::push_heap(this->_impl.begin(), this->_impl.end(), std::greater<TKey>());
+	_impl.push_back(key);
+	std::push_heap(_impl.begin(), _impl.end(), std::greater<TKey>());
 }
 
 template<typename TKey>
-void TrustedHeap<TKey>::MeldOn(const TrustedHeap<TKey>& other)
+void TrustedHeap<TKey>::MeldOn(const IHeap<TKey>& other)
 {
-	this->_impl.reserve(this->_impl.size() + other._impl.size());
-	for (auto key : other._impl) this->_impl.push_back(key);
-	std::make_heap(this->_impl.begin(), this->_impl.end(), std::greater<TKey>());
+	const TrustedHeap<TKey>& casted = dynamic_cast<const TrustedHeap<TKey>&>(other);
+	
+	_impl.reserve(_impl.size() + casted._impl.size());
+
+	std::copy(casted._impl.begin(), casted._impl.end(), 
+		std::insert_iterator<std::vector<TKey>>(_impl, _impl.end()));
+
+	std::make_heap(_impl.begin(), _impl.end(), std::greater<TKey>());
 }
 
 template<typename TKey>
 std::size_t TrustedHeap<TKey>::Size() const
 {
-	return this->_impl.size();
+	return _impl.size();
 }
 
 template<typename TKey>
 bool TrustedHeap<TKey>::Empty() const
 {
-	return this->_impl.empty();
+	return _impl.empty();
 }
 
 template<typename TKey>
 std::ostream& operator<<(std::ostream& out, const TrustedHeap<TKey>& heap)
 {
-	for (auto node : heap._impl) out << node << " ";
+	for (auto node : heap._impl) 
+		out << node << " ";
 
 	return out;
 }

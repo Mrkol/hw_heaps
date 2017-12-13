@@ -5,7 +5,7 @@
 #include <iostream>
 #include <iterator>
 #include <list>
-#include "BaseHeap.hpp"
+#include "IHeap.hpp"
 
 
 template<typename TKey>
@@ -15,13 +15,13 @@ template<typename TKey>
 class BinomialNode;
 
 template<typename TKey>
-std::ostream& operator<<(std::ostream&, const BinomialNode<TKey>&);
-
-template<typename TKey>
 std::ostream& operator<<(std::ostream&, const BinomialHeap<TKey>&);
 
 template<typename TKey>
-class BinomialHeap : public BaseHeap<TKey, BinomialHeap<TKey>>
+std::ostream& operator<<(std::ostream&, const BinomialNode<TKey>*);
+
+template<typename TKey>
+class BinomialHeap : public IHeap<TKey>
 {
 public:
 	using KeyType = TKey;
@@ -41,20 +41,23 @@ public:
 
 	void Insert(KeyConstReference) override;
 
-	void MeldOn(const BinomialHeap<TKey>&) override;
+	void MeldOn(const IHeap<TKey>&) override;
 
 	std::size_t Size() const override;
 
 	bool Empty() const override;
 
-	~BinomialHeap() noexcept override;
+	~BinomialHeap() noexcept;
 
 	friend std::ostream& operator<< <>(std::ostream&, const BinomialHeap<TKey>&);
 private:
 	//NOTE: this uses up the list
 	void _meld(std::list<NodeType*>&);
-	static void _partialReminderMeld(NodeType*&, NodeType*, NodeType*&);
-	static NodeType* _partialMeld(NodeType*, NodeType*);
+
+	static void _partialReminderMeld(NodeType*, NodeType*, NodeType*, NodeType*&, NodeType*&);
+
+	static void _partialMeld(NodeType*, NodeType*, NodeType*&, NodeType*&);
+
 	void _updateMinimum(typename std::list<NodeType*>::iterator&);
 
 	std::list<NodeType*> _roots;
@@ -64,7 +67,7 @@ private:
 };
 
 template<typename TKey>
-class BinomialNode : public BaseNode<TKey, BinomialNode<TKey>>
+class BinomialNode
 {
 public:
 	explicit BinomialNode(const TKey&);
@@ -73,13 +76,17 @@ public:
 
 	BinomialNode<TKey>& operator=(const BinomialNode<TKey>&) = delete;
 
-	~BinomialNode() override;
+	~BinomialNode();
 
-	friend std::ostream& operator<< <>(std::ostream&, const BinomialNode<TKey>&);
+	static inline const TKey& Key(const BinomialNode<TKey>*);
+
+	friend std::ostream& operator<< <>(std::ostream&, const BinomialNode<TKey>*);
 
 	template<typename TKey_>
 	friend class BinomialHeap;
+
 private:
+	TKey _key;
 	std::list<BinomialNode*> _children;
 };
 

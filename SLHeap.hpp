@@ -3,35 +3,29 @@
 
 #include <cstddef>
 #include <iostream>
-#include "BaseHeap.hpp"
+#include "IHeap.hpp"
 
 
-template<typename, class, class>
+template<typename, class>
 class SLHeap;
 
 template<typename, class>
 class SLNode;
 
 template<typename>
-class LeftistHeap;
-
-template<typename>
 class LeftistNode;
-
-template<typename>
-class ScewHeap;
 
 template<typename>
 class ScewNode;
 
-template<typename TKey, class TDerived, class TNode>
-std::ostream& operator<<(std::ostream&, const SLHeap<TKey, TDerived, TNode>&);
+template<typename TKey, class TNode>
+std::ostream& operator<<(std::ostream&, const SLHeap<TKey, TNode>&);
 
 template<typename TKey, class TDerived>
-std::ostream& operator<<(std::ostream&, const SLNode<TKey, TDerived>&);
+std::ostream& operator<<(std::ostream&, const SLNode<TKey, TDerived>*);
 
-template<typename TKey, class TDerived, class TNode>
-class SLHeap : public BaseHeap<TKey, TDerived>
+template<typename TKey, class TNode>
+class SLHeap : public IHeap<TKey>
 {
 public:
 	using KeyType = TKey;
@@ -42,9 +36,9 @@ public:
 
 	SLHeap();
 
-	SLHeap(const SLHeap<TKey, TDerived, TNode>&);
+	SLHeap(const SLHeap<TKey, TNode>&);
 
-	SLHeap<TKey, TDerived, TNode>& operator=(const SLHeap<TKey, TDerived, TNode>&);
+	SLHeap<TKey, TNode>& operator=(const SLHeap<TKey, TNode>&);
 
 	KeyConstReference GetMin() const override;
 
@@ -52,7 +46,7 @@ public:
 
 	void Insert(KeyConstReference) override;
 
-	void MeldOn(const TDerived&) override;
+	void MeldOn(const IHeap<TKey>&) override;
 
 	std::size_t Size() const override;
 
@@ -60,8 +54,8 @@ public:
 
 	~SLHeap() noexcept;
 
-	friend std::ostream& operator<<<>(std::ostream&, const SLHeap<TKey, TDerived, TNode>&);
-	
+	friend std::ostream& operator<<<>(std::ostream&, const SLHeap<TKey, TNode>&);	
+
 protected:
 	static NodeType* _meld(NodeType*, NodeType*);
 
@@ -71,7 +65,7 @@ protected:
 };
 
 template<typename TKey, typename TDerived>
-class SLNode : public BaseNode<TKey, TDerived>
+class SLNode
 {
 public:
 	explicit SLNode(const TKey&);
@@ -81,13 +75,18 @@ public:
 
 	virtual void RestoreInvariant() = 0;
 
-	virtual ~SLNode() noexcept override;
+	virtual ~SLNode() noexcept;
 
-	template<typename TKey_, class TDerived_, class TNode_>
+	template<typename TKey_, class TNode_>
 	friend class SLHeap;
 
-	friend std::ostream& operator<<<>(std::ostream&, const SLNode<TKey, TDerived>&);
+	static inline const TKey& Key(const SLNode<TKey, TDerived>*);
+
+	friend std::ostream& operator<<<>(std::ostream&, const SLNode<TKey, TDerived>*);
+	
 protected:
+	TKey _key;
+
 	TDerived* _left;
 	TDerived* _right;
 };
@@ -103,17 +102,9 @@ public:
 	static inline int Rank(const LeftistNode<TKey>*);
 
 	virtual ~LeftistNode() override = default;
+
 private:
 	int _rank;
-};
-
-template<typename TKey>
-class LeftistHeap : public SLHeap<TKey, LeftistHeap<TKey>, LeftistNode<TKey>>
-{
-public:
-	using KeyType = TKey;
-	using KeyReference = TKey&;
-	using KeyConstReference = const TKey&;
 };
 
 template<typename TKey>
@@ -128,15 +119,10 @@ public:
 };
 
 template<typename TKey>
-class ScewHeap : public SLHeap<TKey, ScewHeap<TKey>, ScewNode<TKey>>
-{
-public:
-	using KeyType = TKey;
-	using KeyReference = TKey&;
-	using KeyConstReference = const TKey&;
+using ScewHeap = SLHeap<TKey, ScewNode<TKey>>;
 
-private:
-};
+template<typename TKey>
+using LeftistHeap = SLHeap<TKey, LeftistNode<TKey>>;
 
 #include "SLHeap.tpp"
 

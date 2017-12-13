@@ -1,100 +1,97 @@
 #include "SLHeap.hpp" //this is needed for autocompletion to work :/
 
-template<typename TKey, class TDerived, class TNode>
-SLHeap<TKey, TDerived, TNode>::SLHeap()
-	: BaseHeap<TKey, TDerived>(), _root(nullptr), _size(0)
+template<typename TKey, class TNode>
+SLHeap<TKey, TNode>::SLHeap()
+	: _root(nullptr), _size(0)
 {
 
 }
 
-template<typename TKey, class TDerived, class TNode>
-SLHeap<TKey, TDerived, TNode>::SLHeap(const SLHeap<TKey, TDerived, TNode>& other)
-	: BaseHeap<TKey, TDerived>(other), _size(other._size)
+template<typename TKey, class TNode>
+SLHeap<TKey, TNode>::SLHeap(const SLHeap<TKey, TNode>& other)
+	: _size(other._size)
 {
 	if (other._root != nullptr) _root = new TNode(*other._root);
 	else _root = nullptr;
 }
 
-template<typename TKey, class TDerived, class TNode>
-SLHeap<TKey, TDerived, TNode>& 
-	SLHeap<TKey, TDerived, TNode>::operator=(const SLHeap<TKey, TDerived, TNode>& other)
+template<typename TKey, class TNode>
+SLHeap<TKey, TNode>& SLHeap<TKey, TNode>::operator=(const SLHeap<TKey, TNode>& other)
 {
-	if (this == &other) return *this;
+	if (this == &other) 
+		return *this;
 	
-	if (this->_root != nullptr) delete this->_root;
+	if (_root != nullptr) 
+		delete _root;
 
-	if (other._root != nullptr) _root = new TNode(*other._root);
-	else _root = nullptr;
+	_root = other._root == nullptr ? nullptr : new TNode(*other._root);
 
-	this->_size = other._size;
+	_size = other._size;
 
 	return *this;
 }
 
-template<typename TKey, class TDerived, class TNode>
-SLHeap<TKey, TDerived, TNode>::~SLHeap() noexcept
+template<typename TKey, class TNode>
+SLHeap<TKey, TNode>::~SLHeap() noexcept
 {
-	if (this->_root != nullptr) delete this->_root;
+	if (_root != nullptr) 
+		delete _root;
 }
 
-template<typename TKey, class TDerived, class TNode>
-const TKey& SLHeap<TKey, TDerived, TNode>::GetMin() const
+template<typename TKey, class TNode>
+const TKey& SLHeap<TKey, TNode>::GetMin() const
 {
-	//OH THANKS C++! NAME LOOKUP IS CONVINIENT AS ALWASY, I SEE
-	using BN = BaseNode<TKey, TNode>;
 	//if someone tries too get an empty heap's minimum, it's considered to be undefined behaviour
-	return BN::Key(this->_root);
+	return NodeType::Key(_root);
 }
 
-template<typename TKey, class TDerived, class TNode>
-TKey SLHeap<TKey, TDerived, TNode>::ExtractMin()
+template<typename TKey, class TNode>
+TKey SLHeap<TKey, TNode>::ExtractMin()
 {
-	using BN = BaseNode<TKey, TNode>;
-
 	//undefined behaviour for empty heaps as well
-	TNode* root = this->_root;
+	TNode* root = _root;
 
-	this->_root = _meld(this->_root->_left, this->_root->_right);
+	_root = _meld(_root->_left, _root->_right);
 
-	TKey key = BN::Key(root);
+	TKey key = NodeType::Key(root);
 
 	//guess how much time I spent trying to find this segfault?
 	root->_left = nullptr;
 	root->_right = nullptr;
 	delete root;
 
-	--this->_size;
+	--_size;
 	return key;
 }
 
-template<typename TKey, class TDerived, class TNode>
-void SLHeap<TKey, TDerived, TNode>::Insert(KeyConstReference key) 
+template<typename TKey, class TNode>
+void SLHeap<TKey, TNode>::Insert(KeyConstReference key) 
 {
-	this->_root = _meld(this->_root, new TNode(key));
-	++this->_size;
+	_root = _meld(_root, new TNode(key));
+	++_size;
 }
 
-template<typename TKey, class TDerived, class TNode>
-void SLHeap<TKey, TDerived, TNode>::MeldOn(const TDerived& other)
+template<typename TKey, class TNode>
+void SLHeap<TKey, TNode>::MeldOn(const IHeap<TKey>& other)
 {
-	using BN = BaseNode<TKey, TNode>;
-	if (BN::Empty(other._root)) return;
+	const SLHeap<TKey, TNode>& casted = dynamic_cast<const SLHeap<TKey, TNode>&>(other);
 
-	TNode* copy = new TNode(*other._root);
-	this->_root = _meld(this->_root, copy);
+	if (casted._root == nullptr)
+		return;
 
-	this->_size += other._size;
+	TNode* copy = new TNode(*casted._root);
+	_root = _meld(_root, copy);
+
+	_size += casted._size;
 }
 
-template<typename TKey, class TDerived, class TNode>
-TNode* SLHeap<TKey, TDerived, TNode>::_meld(TNode* left, TNode* right)
+template<typename TKey, class TNode>
+TNode* SLHeap<TKey, TNode>::_meld(TNode* left, TNode* right)
 {
-	using BN = BaseNode<TKey, TNode>;
+	if (left == nullptr) return right;
+	if (right == nullptr) return left;
 
-	if (BN::Empty(left)) return right;
-	if (BN::Empty(right)) return left;
-
-	if (BN::Key(left) > BN::Key(right)) std::swap(left, right);
+	if (NodeType::Key(left) > NodeType::Key(right)) std::swap(left, right);
 
 	left->_right = _meld(left->_right, right);
 
@@ -103,41 +100,50 @@ TNode* SLHeap<TKey, TDerived, TNode>::_meld(TNode* left, TNode* right)
 	return left;
 }
 
-template<typename TKey, class TDerived, class TNode>
-std::size_t SLHeap<TKey, TDerived, TNode>::Size() const
+template<typename TKey, class TNode>
+std::size_t SLHeap<TKey, TNode>::Size() const
 {
-	return this->_size;
+	return _size;
 }
 
-template<typename TKey, class TDerived, class TNode>
-bool SLHeap<TKey, TDerived, TNode>::Empty() const
+template<typename TKey, class TNode>
+bool SLHeap<TKey, TNode>::Empty() const
 {
-	return this->_size == 0;
+	return _size == 0;
 }
+
+
 
 template<typename TKey, class TDerived>
 SLNode<TKey, TDerived>::SLNode(const TKey& key)
-	: BaseNode<TKey, TDerived>(key), _left(nullptr), _right(nullptr)
+	: _key(key), _left(nullptr), _right(nullptr)
 {
 
 }
 
 template<typename TKey, class TDerived>
 SLNode<TKey, TDerived>::SLNode(const SLNode<TKey, TDerived>& other)
-	: BaseNode<TKey, TDerived>(other)
+	: _key(other._key)
 {
-	//not using BaseNode<TKey, TDerived>::Empty because 
-	//what's happening here is more clear this way
-	this->_left = other._left == nullptr ? nullptr : new TDerived(*other._left);
-	this->_right = other._right == nullptr ? nullptr : new TDerived(*other._right);
+	_left = other._left == nullptr ? nullptr : new TDerived(*other._left);
+	_right = other._right == nullptr ? nullptr : new TDerived(*other._right);
+}
+
+template<typename TKey, class TDerived>
+const TKey& SLNode<TKey, TDerived>::Key(const SLNode<TKey, TDerived>* node)
+{
+	//if called on nullptr, behaviour is undefined
+	return node->_key;
 }
 
 template<typename TKey, class TDerived>
 SLNode<TKey, TDerived>::~SLNode() noexcept
 {
-	//same
-	if (this->_left != nullptr) delete this->_left;
-	if (this->_right != nullptr) delete this->_right;
+	if (_left != nullptr) 
+		delete _left;
+
+	if (_right != nullptr) 
+		delete _right;
 }
 
 template<typename TKey>
@@ -149,10 +155,8 @@ LeftistNode<TKey>::LeftistNode(const TKey& key)
 
 template<typename TKey>
 int LeftistNode<TKey>::Rank(const LeftistNode<TKey>* node)
-{
-	using BN = BaseNode<TKey, LeftistNode<TKey>>;
-	
-	if (BN::Empty(node)) return 0;
+{	
+	if (node == nullptr) return 0;
 
 	return node->_rank;
 }
@@ -160,20 +164,10 @@ int LeftistNode<TKey>::Rank(const LeftistNode<TKey>* node)
 template<typename TKey>
 void LeftistNode<TKey>::RestoreInvariant()
 {
-	using BN = BaseNode<TKey, LeftistNode<TKey>>;
-
-	if (BN::Empty(this->_left))
-	{
+	if (Rank(this->_left) < Rank(this->_right))
 		std::swap(this->_left, this->_right);
-		return;
-	}
 
-	if (this->_left->_rank < this->_right->_rank)
-	{
-		std::swap(this->_left, this->_right);
-	}
-
-	this->_rank = Rank(this->_right) + 1;
+	_rank = Rank(this->_right) + 1;
 }
 
 
@@ -190,30 +184,28 @@ void ScewNode<TKey>::RestoreInvariant()
 	std::swap(this->_left, this->_right);
 }
 
-template<typename TKey, class TDerived, class TNode>
-std::ostream& operator<<(std::ostream& out, const SLHeap<TKey, TDerived, TNode>& heap)
+template<typename TKey, class TNode>
+std::ostream& operator<<(std::ostream& out, const SLHeap<TKey, TNode>& heap)
 {
 	out << "Min: " << heap.GetMin() << std::endl;
 	
-	out << *heap._root << std::endl;
+	out << heap._root << std::endl;
 
 	return out;
 }
 
 template<typename TKey, class TDerived>
-std::ostream& operator<<(std::ostream& out, const SLNode<TKey, TDerived>& node)
+std::ostream& operator<<(std::ostream& out, const SLNode<TKey, TDerived>* node)
 {
-	using BN = BaseNode<TKey, TDerived>;
-
-	if (BN::Empty(&node))
+	if (node == nullptr)
 	{
 		out << "()"; 
 	}
 	else
 	{
-		out << "(" << BN::Key(&node) << ": ";
-		out << *node._left;
-		out << *node._right;
+		out << "(" << SLNode<TKey, TDerived>::Key(node) << ": ";
+		out << node->_left;
+		out << node->_right;
 		out << ")";
 	}
 

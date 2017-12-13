@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <algorithm>
-#include "BaseHeap.hpp"
+#include "IHeap.hpp"
 
 template<typename TKey>
 class TrustedHeap;
@@ -12,7 +12,7 @@ template<typename TKey>
 std::ostream& operator<<(std::ostream&, const TrustedHeap<TKey>&);
 
 template<typename TKey>
-class TrustedHeap : BaseHeap<TKey, TrustedHeap<TKey>>
+class TrustedHeap : public IHeap<TKey>
 {
 public:
 	using KeyType = TKey;
@@ -25,7 +25,7 @@ public:
 
 	void Insert(KeyConstReference) override;
 
-	void MeldOn(const TrustedHeap<TKey>&) override;
+	void MeldOn(const IHeap<TKey>&) override;
 
 	std::size_t Size() const override;
 

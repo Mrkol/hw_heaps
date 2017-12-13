@@ -48,6 +48,7 @@ std::size_t HeapList<THeap>::Empty(IndexType index) const
 template<class THeap>
 std::ostream& operator<<(std::ostream& out, const HeapList<THeap>& heaps)
 {
+	out << "HeapList (size " << heaps.Size() << ")" << std::endl;
 	for (auto& heap : heaps._heaps)
 	{
 		out << heap << std::endl;

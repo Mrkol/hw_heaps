@@ -138,7 +138,7 @@ namespace
 
 		for (const auto& op : testData) 
 		{
-			EXPECT_TRUE(Matches(heaps, trusted)) << testData;
+			ASSERT_TRUE(Matches(heaps, trusted)) << testData;
 
 			OpType optype = std::get<0>(op);
 			long long param1 = std::get<1>(op);
@@ -234,7 +234,7 @@ namespace
 	}
 
 	INSTANTIATE_TEST_CASE_P(MainTestCaseInstance, MainTestCase,
-                        ::testing::Values(1e3, 1e4, 1e5));
+                        ::testing::Values(1e3, 1e4));
 }
 
 
