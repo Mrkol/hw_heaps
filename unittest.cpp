@@ -20,7 +20,7 @@ namespace
 		bool success = true;
 		success &= heaps.Size() == trusted.Size();
 
-		for (size_t i = 0; i < trusted.Size(); ++i)
+		for (std::size_t i = 0; i < trusted.Size(); ++i)
 		{
 			if (!heaps.Empty(i)) success &= heaps.GetMin(i) == trusted.GetMin(i);
 		}
