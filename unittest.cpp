@@ -10,6 +10,7 @@
 #include "BinomialHeap.hpp"
 #include "TrustedHeap.hpp"
 #include "HeapList.hpp"
+#include "testing.hpp"
 
 namespace 
 {
@@ -36,108 +37,20 @@ namespace
 		return res;
 	}
 
-
-	enum OpType
-	{
-		AddHeap,
-		InsertKey,
-		ExtractMin,
-		Meld
-	};
-
-	struct Operation
-	{
-		OpType type;
-		long long param1;
-		long long param2;
-	};
-
 	class MainTestCase : public ::testing::TestWithParam<std::size_t>
 	{
 	protected:
 		std::default_random_engine engine;
+		TestData _testData;
 
 		virtual void SetUp()
 		{
-			std::size_t size = GetParam();
-
-			_valueData.reserve(size);
-			for (std::size_t i = 0; i < size; ++i) _valueData.push_back((long long)i);
-			std::shuffle(_valueData.begin(), _valueData.end(), engine);
-
-			auto it = _valueData.cbegin();
-
-			_testData.reserve(size);
-	
-			std::discrete_distribution<int> type({10, 10, 5, 5});
-
-			HeapList<TrustedHeap<long long>> trusted;
-
-			while (_testData.size() < size) 
-			{
-				OpType optype = (OpType) type(engine);
-
-				if (optype == AddHeap)
-				{
-					long long k = *it++;
-					trusted.AddHeap(k);
-					_testData.push_back({optype, k, 0});
-					continue;
-				}
-
-				if (trusted.Size() == 0) continue;
-				std::uniform_int_distribution<long long> index(0, trusted.Size() - 1);
-				
-				if (optype == InsertKey)
-				{
-					long long k = *it++;
-					long long i = index(engine);
-					trusted.InsertKey(i, k);
-					_testData.push_back({optype, i, k});
-					continue;
-				}
-
-				if (optype == ExtractMin)
-				{
-					long long i = index(engine);
-					if (trusted.Empty(i)) continue;
-					trusted.ExtractMin(i);
-					_testData.push_back({optype, i, 0});
-					continue;
-				}
-
-				if (optype == Meld)
-				{
-					long long i = index(engine);
-					long long j = index(engine);
-					if (i == j) continue;
-					trusted.Meld(i, j);
-					_testData.push_back({optype, i, j});
-					continue;
-				}
-			}
+			GenerateTest(_testData, GetParam(), engine);
 		}
-
-		std::vector<long long> _valueData;
-		std::vector<Operation> _testData;
 	};
 
-	std::ostream& operator<<(std::ostream& out, 
-		const std::vector<Operation>& ops)
-	{
-		out << "{" << std::endl;
-		for (auto op : ops)
-		{
-			out << "\t";
-			out << "(" << op.type << ", " << op.param1 << ", " << op.param2 << ")";
-			out << std::endl;
-		}
-		out << "}";
-		return out;
-	}
-
 	template<class THeap>
-	void CommonHeapTests(const std::vector<Operation>& testData)
+	void CommonHeapTests(const TestData& testData)
 	{
 
 		HeapList<THeap> heaps;
