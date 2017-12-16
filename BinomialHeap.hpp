@@ -41,7 +41,7 @@ public:
 
 	void Insert(KeyConstReference) override;
 
-	void MeldOn(const IHeap<TKey>&) override;
+	void MeldOn(IHeap<TKey>&) override;
 
 	std::size_t Size() const override;
 
@@ -51,6 +51,7 @@ public:
 
 	friend std::ostream& operator<< <>(std::ostream&, const BinomialHeap<TKey>&);
 private:
+	void _copyState(const BinomialHeap<TKey>&);
 	//NOTE: this uses up the list
 	void _meld(std::list<NodeType*>&);
 

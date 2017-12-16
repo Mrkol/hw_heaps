@@ -25,15 +25,17 @@ void TrustedHeap<TKey>::Insert(KeyConstReference key)
 }
 
 template<typename TKey>
-void TrustedHeap<TKey>::MeldOn(const IHeap<TKey>& other)
+void TrustedHeap<TKey>::MeldOn(IHeap<TKey>& other)
 {
-	const TrustedHeap<TKey>& casted = dynamic_cast<const TrustedHeap<TKey>&>(other);
+	TrustedHeap<TKey>& casted = dynamic_cast<TrustedHeap<TKey>&>(other);
 	
 	_impl.reserve(_impl.size() + casted._impl.size());
 
 	_impl.insert(_impl.end(), casted._impl.begin(), casted._impl.end());
 
 	std::make_heap(_impl.begin(), _impl.end(), std::greater<TKey>());
+
+	casted._impl.clear();
 }
 
 template<typename TKey>

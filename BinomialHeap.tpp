@@ -12,21 +12,11 @@ template<typename TKey>
 BinomialHeap<TKey>::BinomialHeap(const BinomialHeap<TKey>& other)
 	: _size(other._size)
 {
-	for (auto ptr : other._roots)
-	{
-		if (ptr != nullptr) 
-			_roots.push_back(new BinomialNode<TKey>(*ptr));
-		else 
-			_roots.push_back(nullptr);
-	}
-	_minimum = std::next(_roots.begin(),
-		 std::distance<typename std::list<NodeType*>::const_iterator>(
-		 	other._roots.begin(), 
-		 	other._minimum));
+	_copyState(other);
 }
 
 template<typename TKey>
-BinomialHeap<TKey>& BinomialHeap<TKey>::operator=(const BinomialHeap<TKey>& other)
+BinomialHeap<TKey>& BinomialHeap<TKey>::operator =(const BinomialHeap<TKey>& other)
 {
 	if (this == &other) 
 		return *this;
@@ -37,8 +27,17 @@ BinomialHeap<TKey>& BinomialHeap<TKey>::operator=(const BinomialHeap<TKey>& othe
 			delete ptr;
 	}
 
+	_size = other._size;
 	_roots.clear();
 
+	_copyState(other);
+
+	return *this;
+}
+
+template<typename TKey>
+void BinomialHeap<TKey>::_copyState(const BinomialHeap<TKey>& other)
+{
 	for (auto ptr : other._roots)
 	{
 		if (ptr != nullptr) 
@@ -46,13 +45,11 @@ BinomialHeap<TKey>& BinomialHeap<TKey>::operator=(const BinomialHeap<TKey>& othe
 		else 
 			_roots.push_back(nullptr);
 	}
+
 	_minimum = std::next(_roots.begin(),
 		 std::distance<typename std::list<NodeType*>::const_iterator>(
 		 	other._roots.begin(), 
 		 	other._minimum));
-	_size = other._size;
-
-	return *this;
 }
 
 template<typename TKey>
@@ -60,7 +57,7 @@ BinomialHeap<TKey>::~BinomialHeap() noexcept
 {
 	for (auto ptr : _roots)
 	{
-		if (ptr != nullptr) 
+		if (ptr != nullptr)
 			delete ptr;
 	}
 }
@@ -100,18 +97,17 @@ TKey BinomialHeap<TKey>::ExtractMin()
 }
 
 template<typename TKey>
-void BinomialHeap<TKey>::MeldOn(const IHeap<TKey>& other)
+void BinomialHeap<TKey>::MeldOn(IHeap<TKey>& other)
 {
-	using NodeType = BinomialHeap<TKey>::NodeType;
+	BinomialHeap<TKey>& casted = dynamic_cast<BinomialHeap<TKey>&>(other);
 
-	const BinomialHeap<TKey>& casted = dynamic_cast<const BinomialHeap<TKey>&>(other);
-
-	std::list<NodeType*> copy;
-	for (auto ptr : casted._roots)
-		copy.push_back(ptr != nullptr ? new NodeType(*ptr) : nullptr);
-	_meld(copy);
-
+	_meld(casted._roots);
 	_size += casted._size;
+
+	casted._roots.clear();
+	casted._roots.push_back(nullptr);
+	casted._minimum = casted._roots.begin();
+	casted._size = 0;
 }
 
 template<typename TKey>
@@ -246,12 +242,13 @@ BinomialNode<TKey>::~BinomialNode()
 {
 	for (auto ptr : _children)
 	{
-		if (ptr != nullptr) delete ptr;
+		if (ptr != nullptr) 
+			delete ptr;
 	}
 }
 
 template<typename TKey>
-std::ostream& operator<<(std::ostream& out, const BinomialHeap<TKey>& heap)
+std::ostream& operator <<(std::ostream& out, const BinomialHeap<TKey>& heap)
 {
 	out << "Min: " << (*heap._minimum != nullptr ? heap.GetMin() : -228) << std::endl;
 
@@ -264,7 +261,7 @@ std::ostream& operator<<(std::ostream& out, const BinomialHeap<TKey>& heap)
 }
 
 template<typename TKey>
-std::ostream& operator<<(std::ostream& out, const BinomialNode<TKey>* node)
+std::ostream& operator <<(std::ostream& out, const BinomialNode<TKey>* node)
 {
 	if (node == nullptr)
 	{

@@ -1,21 +1,21 @@
 [ScewHeap] Testing over 1000 operations...
-Finished. Elapsed time: 3290ms
+Finished. Elapsed time: 2902ms
 [LeftistHeap] Testing over 1000 operations...
-Finished. Elapsed time: 3067ms
+Finished. Elapsed time: 2905ms
 [BinomialHeap] Testing over 1000 operations...
-Finished. Elapsed time: 7280ms
+Finished. Elapsed time: 8693ms
 
 [ScewHeap] Testing over 10000 operations...
-Finished. Elapsed time: 341050ms
+Finished. Elapsed time: 339101ms
 [LeftistHeap] Testing over 10000 operations...
-Finished. Elapsed time: 320932ms
+Finished. Elapsed time: 328890ms
 [BinomialHeap] Testing over 10000 operations...
-Finished. Elapsed time: 766158ms
+Finished. Elapsed time: 795624ms
 
 [ScewHeap] Testing over 100000 operations...
-Finished. Elapsed time: 47556652ms
+Finished. Elapsed time: 49755465ms
 [LeftistHeap] Testing over 100000 operations...
-Finished. Elapsed time: 46594336ms
+Finished. Elapsed time: 48269750ms
 [BinomialHeap] Testing over 100000 operations...
-Finished. Elapsed time: 129792309ms
+Finished. Elapsed time: 166977354ms
 

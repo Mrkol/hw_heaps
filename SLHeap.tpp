@@ -72,24 +72,24 @@ void SLHeap<TKey, TNode>::Insert(KeyConstReference key)
 }
 
 template<typename TKey, class TNode>
-void SLHeap<TKey, TNode>::MeldOn(const IHeap<TKey>& other)
+void SLHeap<TKey, TNode>::MeldOn(IHeap<TKey>& other)
 {
-	const SLHeap<TKey, TNode>& casted = dynamic_cast<const SLHeap<TKey, TNode>&>(other);
+	SLHeap<TKey, TNode>& casted = dynamic_cast<SLHeap<TKey, TNode>&>(other);
 
-	if (casted._root == nullptr)
-		return;
-
-	TNode* copy = new TNode(*casted._root);
-	_root = _meld(_root, copy);
-
+	_root = _meld(_root, casted._root);
 	_size += casted._size;
+	
+	casted._root = nullptr;
+	casted._size = 0;
 }
 
 template<typename TKey, class TNode>
 TNode* SLHeap<TKey, TNode>::_meld(TNode* left, TNode* right)
 {
-	if (left == nullptr) return right;
-	if (right == nullptr) return left;
+	if (left == nullptr) 
+		return right;
+	if (right == nullptr) 
+		return left;
 
 	if (NodeType::Key(left) > NodeType::Key(right)) std::swap(left, right);
 

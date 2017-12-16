@@ -46,7 +46,7 @@ public:
 
 	void Insert(KeyConstReference) override;
 
-	void MeldOn(const IHeap<TKey>&) override;
+	void MeldOn(IHeap<TKey>&) override;
 
 	std::size_t Size() const override;
 

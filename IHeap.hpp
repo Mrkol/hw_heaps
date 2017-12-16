@@ -21,7 +21,7 @@ public:
 
 	virtual void Insert(KeyConstReference) = 0;
 
-	virtual void MeldOn(const IHeap<TKey>&) = 0;
+	virtual void MeldOn(IHeap<TKey>&) = 0;
 
 	virtual std::size_t Size() const = 0;
 
